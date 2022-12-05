@@ -1,7 +1,9 @@
 package com.example.sudokugame;
 
+
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.TypedArray;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
@@ -48,16 +50,19 @@ public class BoardView extends View {
     int cellSize;
     int groupSize;
 
+    int filled = 0;
+    int target = 0;
+
     int[][] board = new int[9][9];
     int[][] fillBoard = new int[9][9];
     int[][] failBoard = new int[9][9];
     int[][] colors = new int[9][9];
 
-
+    private boolean autoFill = true;
 
     @RequiresApi(api = Build.VERSION_CODES.O)
-    public BoardView(Context context, @Nullable AttributeSet attrb) {
-        super(context, attrb);
+    public BoardView(Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
 
         setEvents();
 
@@ -118,7 +123,34 @@ public class BoardView extends View {
         textFailedBrush.setFakeBoldText(true);
         textFailedBrush.setAntiAlias(true);
 
-        setBoard(SudokuGenerator.generateBoard());
+        TypedArray a = context.getTheme().obtainStyledAttributes(
+                attrs,
+                R.styleable.BoardView,
+                0, 0);
+
+        try {
+            autoFill = a.getBoolean(R.styleable.BoardView_autoFill, true);
+        } finally {
+            a.recycle();
+        }
+        if(autoFill) {
+            //GameScene gameScene = (GameScene) getActivity();
+            //int diff = Integer.parseInt(((GameScene) getActivity()).getIntent().getStringExtra("DIFFICULTY"));
+            //System.out.println("DIFF: " + diff);
+            //System.out.println("HERE IT FILLS");
+            setBoard(SudokuGenerator.generateBoard());
+        }
+
+        filled = 0;
+        target = 81;
+
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(board[i][j] != -1)
+                    target--;
+            }
+        }
+
         //fillInitialBoard(35);
     }
 
@@ -149,6 +181,30 @@ public class BoardView extends View {
             completed[i] = 0;
 
         return completed;
+    }
+
+    public String getProgress() {
+        return "" + filled + "/" + target;
+    }
+
+    public int getProgressInt() {
+        return target - filled;
+    }
+
+    public int[][] getFinalBoard(){
+        int[][] finalBoard = new int[9][9];
+
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(fillBoard[i][j] != -1)
+                    finalBoard[i][j] = fillBoard[i][j];
+
+                if(board[i][j] != -1)
+                    finalBoard[i][j] = board[i][j];
+            }
+        }
+
+        return finalBoard;
     }
 
     protected void setEvents(){
@@ -188,6 +244,8 @@ public class BoardView extends View {
             }
         });
     }
+
+
 
     boolean isValid(int num, int x, int y){
         for(int i=0;i<9;i++){
@@ -257,6 +315,15 @@ public class BoardView extends View {
         }
 
         selectedNum = num;
+
+        filled = 0;
+
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(fillBoard[i][j] != -1)
+                    filled++;
+            }
+        }
 
         drawView();
     }

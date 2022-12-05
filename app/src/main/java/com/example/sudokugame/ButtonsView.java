@@ -100,11 +100,15 @@ public class ButtonsView extends View {
     protected void onDraw(Canvas canvas) {
         //canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundBrush);
 
-        int[] completed = refBoard.getCompletion();
+        int[] completed = null;
+
+        if(refBoard != null)
+            completed = refBoard.getCompletion();
 
         for(int i=0;i<10;i++){
-            if(completed[i] == 9)
-                continue;
+            if(refBoard != null && completed != null)
+                if(completed[i] == 9)
+                    continue;
 
             int xFactor = i % 5;
             int yFactor = i / 5;

@@ -7,6 +7,7 @@
     tools:context=".GameScene">
 
     <view
+        xmlns:custom="http://schemas.android.com/apk/res-auto"
         android:id="@+id/boardView"
         class="com.example.sudokugame.BoardView"
         android:layout_width="0dp"
@@ -20,7 +21,8 @@
         app:layout_constraintHorizontal_bias="0.28"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintVertical_bias="0.0"
+        custom:autoFill="true" />
 
     <view
         android:id="@+id/buttonsView"
@@ -49,14 +51,26 @@
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
+            android:id="@+id/progressView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Progress"
+            android:textAlignment="textStart"
+            android:textColor="#000000"
+            android:textSize="16sp" />
+
+        <TextView
             android:id="@+id/timeView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Time"
-            android:textAlignment="center"
+            android:textAlignment="textEnd"
             android:textColor="#000000"
             android:textSize="16sp" />
+
+
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

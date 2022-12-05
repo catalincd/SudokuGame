@@ -2,6 +2,7 @@ package com.example.sudokugame;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.widget.TableLayout;
@@ -11,9 +12,10 @@ import org.w3c.dom.Text;
 
 public class GameScene extends AppCompatActivity {
 
-    private int mInterval = 300;
+    private int mInterval = 200;
     private Handler mHandler;
     int startTime;
+    boolean destroyed = false;
 
     BoardView boardRef;
     ButtonsView buttonsRef;
@@ -22,6 +24,9 @@ public class GameScene extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_game_scene);
+
+        int diff = Integer.parseInt(getIntent().getStringExtra("DIFFICULTY"));
+        System.out.println("DIFF: " + diff);
 
         if(getSupportActionBar() != null){
             getSupportActionBar().hide();
@@ -35,6 +40,8 @@ public class GameScene extends AppCompatActivity {
 
         mHandler = new Handler();
         startRepeatingTask();
+
+
     }
 
     @Override
@@ -52,6 +59,8 @@ public class GameScene extends AppCompatActivity {
 
 
     protected void setupCanvas() {
+
+
         BoardView board = (BoardView) findViewById(R.id.boardView);
         ButtonsView theseButtons = (ButtonsView) findViewById(R.id.buttonsView);
 
@@ -91,10 +100,34 @@ public class GameScene extends AppCompatActivity {
         return ("" + minutes + ":" + zero + seconds);
     }
 
+    public String boardToString(int[][] board){
+        String boardStr = "";
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                boardStr = boardStr + board[i][j];
+            }
+        }
+
+        return boardStr;
+    }
+
     protected void updateTime() {
         int currentTime = (int) System.currentTimeMillis() - startTime;
         TextView timeView = findViewById(R.id.timeView);
         timeView.setText(msToString(currentTime));
+
+        TextView progressView = findViewById(R.id.progressView);
+        progressView.setText(boardRef.getProgress());
+
+        if(boardRef.getProgressInt() == 0 && !destroyed){
+            Intent intent = new Intent(GameScene.this, EndGame.class);
+            String board = boardToString(boardRef.getFinalBoard());
+            intent.putExtra("FINAL_BOARD", board);
+            startActivity(intent);
+            finish();
+
+            destroyed = true;
+        }
     }
 
     void stopRepeatingTask() {

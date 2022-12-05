@@ -10,6 +10,7 @@ import java.util.Random;
 public class SudokuGenerator {
 
     private static final int NULL_DIGIT = -1;
+    public static int DIFFICULTY = 5;
 
     public static int[][] generateBoard(){
         int[][] board = new int[9][9];
@@ -42,7 +43,7 @@ public class SudokuGenerator {
 
         boolean found = false;
         fillBoard(board, targets, 0);
-        stripBoard(board, 35);
+        stripBoard(board, DIFFICULTY);
 
         return board;
     }

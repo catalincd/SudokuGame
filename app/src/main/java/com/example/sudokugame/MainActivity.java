@@ -43,7 +43,7 @@ public class MainActivity extends AppCompatActivity {
         startButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                startActivity(new Intent(MainActivity.this, GameScene.class));
+                startActivity(new Intent(MainActivity.this, DifficultySelector.class));
             }
         });
     }

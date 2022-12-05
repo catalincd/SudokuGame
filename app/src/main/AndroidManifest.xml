@@ -12,12 +12,24 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SudokuGame"
         tools:targetApi="31">
-
-        <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713 -->
+        <activity
+            android:name=".DifficultySelector"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity>
+        <activity
+            android:name=".EndGame"
+            android:exported="false">
+            <meta-data
+                android:name="android.app.lib_name"
+                android:value="" />
+        </activity> <!-- Sample AdMob app ID: ca-app-pub-3940256099942544~3347511713 -->
         <!-- Actual AdMob app ID: ca-app-pub-2645076787825256~6575720512 -->
         <meta-data
             android:name="com.google.android.gms.ads.APPLICATION_ID"
-            android:value="ca-app-pub-3940256099942544~3347511713"/>
+            android:value="ca-app-pub-3940256099942544~3347511713" />
 
         <activity
             android:name=".GameScene"
