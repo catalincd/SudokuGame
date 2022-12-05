@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Looper;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -13,17 +14,22 @@ import android.view.View;
 import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 
+import java.util.LinkedList;
+import java.util.Queue;
+
 public class ButtonsView extends View {
 
     private final Paint backgroundBrush = new Paint();
     private final Paint buttonStroke = new Paint();
     private final Paint buttonBackground = new Paint();
+    private final Paint buttonTouchedBackground = new Paint();
     private final Paint textBrush = new Paint();
 
     private int boardBackground;
     private int textColor;
     private int strokeColor;
     private int buttonBackgroundColor;
+    private int buttonTouchedBackgroundColor;
 
     private BoardView refBoard;
 
@@ -33,16 +39,23 @@ public class ButtonsView extends View {
     int cellSize;
     final int offset = 15;
 
-    String[] buttons = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "x"};
+
+    Queue<Integer> enabledTouched = new LinkedList<Integer>();
+    String[] buttons = {"1", "2", "3", "4", "5", "6", "7", "8", "9", "×"};
+    boolean[] touched = new boolean[10];
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public ButtonsView(Context context, @Nullable AttributeSet attrb) {
         super(context, attrb);
 
+        for(int i=0;i<10;i++)
+            touched[i] = false;
+
         boardBackground = Color.rgb(0.9f, 0.9f, 0.9f);
         textColor = Color.rgb(0.1f, 0.1f, 0.1f);
         strokeColor = Color.rgb(0.0f, 0.0f, 0.0f);
         buttonBackgroundColor = Color.rgb(0.9f, 0.9f, 0.9f);
+        buttonTouchedBackgroundColor = Color.rgb(0.7f, 0.8f, 1.0f);
 
         backgroundBrush.setStyle(Paint.Style.FILL);
         backgroundBrush.setColor(boardBackground);
@@ -56,6 +69,11 @@ public class ButtonsView extends View {
         buttonBackground.setStyle(Paint.Style.FILL);
         buttonBackground.setColor(buttonBackgroundColor);
         buttonBackground.setAntiAlias(true);
+
+        buttonTouchedBackground.setStyle(Paint.Style.FILL);
+        buttonTouchedBackground.setColor(buttonTouchedBackgroundColor);
+        buttonTouchedBackground.setAntiAlias(true);
+
 
         textBrush.setStyle(Paint.Style.FILL);
         textBrush.setColor(textColor);
@@ -82,7 +100,12 @@ public class ButtonsView extends View {
     protected void onDraw(Canvas canvas) {
         //canvas.drawRect(0, 0, getWidth(), getHeight(), backgroundBrush);
 
+        int[] completed = refBoard.getCompletion();
+
         for(int i=0;i<10;i++){
+            if(completed[i] == 9)
+                continue;
+
             int xFactor = i % 5;
             int yFactor = i / 5;
 
@@ -94,7 +117,10 @@ public class ButtonsView extends View {
             int textLeft = xFactor * cellSize + cellSize / 2;
             int textTop = yFactor * cellSize + cellSize / 2;
 
-            //canvas.drawRoundRect(left, top, right, bottom, 10.0f, 10.0f, buttonBackground);
+            if(touched[i])
+                canvas.drawRoundRect(left, top, right, bottom, 10.0f, 10.0f, buttonTouchedBackground);
+            else
+                canvas.drawRoundRect(left, top, right, bottom, 10.0f, 10.0f, buttonBackground);
             //canvas.drawRoundRect(left, top, right, bottom, 10.0f, 10.0f, buttonStroke);
             drawOriginText(canvas, buttons[i], textLeft, textTop, 0.525f, -0.5f, textBrush);
         }
@@ -117,10 +143,22 @@ public class ButtonsView extends View {
                     return false;
                 else{
                     int num = tryY * 5 + tryX;
+                    touched[num] = true;
+                    enabledTouched.add(num);
                     num = (num + 1) % 10;
                     boardInsert(num);
 
                     drawView();
+
+                    new android.os.Handler(Looper.getMainLooper()).postDelayed(
+                            new Runnable() {
+                                public void run() {
+                                    touched[enabledTouched.remove()] = false;
+                                    drawView();
+                                }
+                            },
+                            50);
+
                 }
 
                 if(event.getAction() == MotionEvent.ACTION_BUTTON_PRESS){

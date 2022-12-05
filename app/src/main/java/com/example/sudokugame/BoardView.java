@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.os.Build;
+import android.os.Handler;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -28,6 +29,7 @@ public class BoardView extends View {
     private final Paint textBoldBrush = new Paint();
     private final Paint selectedBrush = new Paint();
     private final Paint superSelectedBrush = new Paint();
+    private final Paint textFailedBrush = new Paint();
 
     private int boardBackground;
     private int thinLineColor;
@@ -36,6 +38,7 @@ public class BoardView extends View {
     private int textBoldColor;
     private int selectedColor;
     private int superSelectedColor;
+    private int textFailedColor;
 
     int selectedX = -1;
     int selectedY = -1;
@@ -47,7 +50,10 @@ public class BoardView extends View {
 
     int[][] board = new int[9][9];
     int[][] fillBoard = new int[9][9];
+    int[][] failBoard = new int[9][9];
     int[][] colors = new int[9][9];
+
+
 
     @RequiresApi(api = Build.VERSION_CODES.O)
     public BoardView(Context context, @Nullable AttributeSet attrb) {
@@ -59,16 +65,18 @@ public class BoardView extends View {
             for(int j=0;j<9;j++){
                 board[i][j] = -1;
                 fillBoard[i][j] = -1;
+                failBoard[i][j] = -1;
             }
         }
 
         boardBackground = Color.rgb(0.9f, 0.9f, 0.9f);
         thinLineColor = Color.rgb(0.0f, 0.0f, 0.0f);
         thickLineColor = Color.rgb(0.0f, 0.0f, 0.0f);
-        textColor = Color.rgb(0.1f, 0.1f, 0.3f);
+        textColor = Color.rgb(0.2f, 0.1f, 0.4f);
         textBoldColor = Color.rgb(0.0f, 0.0f, 0.0f);
         selectedColor = Color.rgb(0.7f, 0.8f, 1.0f);
         superSelectedColor = Color.rgb(0.5f, 0.7f, 1.0f);
+        textFailedColor = Color.rgb(1.0f, 0.1f, 0.3f);
 
         backgroundBrush.setStyle(Paint.Style.FILL);
         backgroundBrush.setColor(boardBackground);
@@ -95,7 +103,7 @@ public class BoardView extends View {
         textBrush.setStyle(Paint.Style.FILL);
         textBrush.setColor(textColor);
         textBrush.setTextSize(90);
-        textBrush.setFakeBoldText(true);
+        //textBrush.setFakeBoldText(true);
         textBrush.setAntiAlias(true);
 
         textBoldBrush.setStyle(Paint.Style.FILL);
@@ -103,6 +111,12 @@ public class BoardView extends View {
         textBoldBrush.setTextSize(90);
         textBoldBrush.setFakeBoldText(true);
         textBoldBrush.setAntiAlias(true);
+
+        textFailedBrush.setStyle(Paint.Style.FILL);
+        textFailedBrush.setColor(textFailedColor);
+        textFailedBrush.setTextSize(90);
+        textFailedBrush.setFakeBoldText(true);
+        textFailedBrush.setAntiAlias(true);
 
         setBoard(SudokuGenerator.generateBoard());
         //fillInitialBoard(35);
@@ -114,6 +128,27 @@ public class BoardView extends View {
                 board[i][j] = refBoard[i][j];
             }
         }
+    }
+
+    public int[] getCompletion(){
+        int[] completed = new int[10];
+        for(int i=0;i<10;i++)
+            completed[i] = 0;
+
+        for(int i=0;i<9;i++){
+            for(int j=0;j<9;j++){
+                if(board[i][j] != -1)
+                    completed[board[i][j] - 1]++;
+
+                if(fillBoard[i][j] != -1)
+                    completed[fillBoard[i][j] - 1]++;
+            }
+        }
+
+        for(int i=0;i<10;i++)
+            completed[i] = 0;
+
+        return completed;
     }
 
     protected void setEvents(){
@@ -135,6 +170,12 @@ public class BoardView extends View {
                         selectedNum = board[selectedX][selectedY];
                     if(fillBoard[selectedX][selectedY] != -1)
                         selectedNum = fillBoard[selectedX][selectedY];
+
+                    for(int i=0;i<9;i++){
+                        for(int j=0;j<9;j++){
+                            failBoard[i][j] = -1;
+                        }
+                    }
 
                     drawView();
                 }
@@ -191,17 +232,31 @@ public class BoardView extends View {
     }
 
     public void drawView(){
-        //Log.d("COORDS: ", "" + selectedX + ", " + selectedY);
         this.invalidate();
     }
 
     public void insertNum(int num){
-        //System.out.println("COXCXX");
 
-        if(selectedY == -1 || selectedX == -1)
+        if(selectedY == -1 || selectedX == -1 || board[selectedX][selectedY] != -1)
             return;
 
-        fillBoard[selectedX][selectedY] = num;
+        if(num == 0){
+            fillBoard[selectedX][selectedY] = -1;
+            failBoard[selectedX][selectedY] = -1;
+            drawView();
+            return;
+        }
+
+        if(isValid(num, selectedX, selectedY)){
+            fillBoard[selectedX][selectedY] = num;
+            failBoard[selectedX][selectedY] = -1;
+        }
+        else{
+            fillBoard[selectedX][selectedY] = -1;
+            failBoard[selectedX][selectedY] = num;
+        }
+
+        selectedNum = num;
 
         drawView();
     }
@@ -252,6 +307,10 @@ public class BoardView extends View {
                 if(fillBoard[i][j] != -1){
                     drawOriginText(canvas, "" + fillBoard[i][j], (cellSize * i) + (cellSize / 2), (cellSize * (j + 1)), 0.525f, 0.32f, textBrush);
                 }
+
+                if(failBoard[i][j] != -1){
+                    drawOriginText(canvas, "" + failBoard[i][j], (cellSize * i) + (cellSize / 2), (cellSize * (j + 1)), 0.525f, 0.32f, textFailedBrush);
+                }
             }
         }
         /// lines
@@ -278,10 +337,12 @@ public class BoardView extends View {
     }
 
     public static void setMargins (View v, int l, int t, int r, int b) {
+        /*
         if (v.getLayoutParams() instanceof ViewGroup.MarginLayoutParams) {
             ViewGroup.MarginLayoutParams p = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
             p.setMargins(l, t, r, b);
             v.requestLayout();
         }
+        */
     }
 }
