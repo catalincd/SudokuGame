@@ -3,11 +3,11 @@ plugins {
 }
 
 android {
-    namespace 'com.example.sudokugame'
+    namespace 'com.catalincd.sudokugame'
     compileSdk 32
 
     defaultConfig {
-        applicationId "com.example.sudokugame"
+        applicationId "com.catalincd.sudokugame"
         minSdk 21
         targetSdk 32
         versionCode 1

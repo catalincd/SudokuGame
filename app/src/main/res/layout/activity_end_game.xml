@@ -10,7 +10,7 @@
     <view
         xmlns:custom="http://schemas.android.com/apk/res-auto"
         android:id="@+id/boardView"
-        class="com.example.sudokugame.BoardView"
+        class="com.catalincd.sudokugame.BoardView"
         android:layout_width="0dp"
         android:layout_height="382dp"
         android:layout_marginStart="15dp"
@@ -103,7 +103,7 @@
         android:layout_height="wrap_content"
         android:text="Finished!"
         android:textAlignment="center"
-        android:textColor="#000000"
+        android:textColor="#A020F0"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/boardView"

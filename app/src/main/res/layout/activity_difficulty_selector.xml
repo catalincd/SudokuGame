@@ -57,7 +57,7 @@
         android:layout_height="wrap_content"
         android:text="Difficulty"
         android:textAlignment="center"
-        android:textColor="#000000"
+        android:textColor="#A020F0"
         android:textSize="34sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toTopOf="@+id/linearLayout2"
